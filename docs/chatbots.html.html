@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Chatbot Server</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#chat" class="nav-link">Chat</a></li>
+                <li><button id="dev-mode-button" aria-controls="dev-mode" class="nav-button">Dev Mode</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div id="dev-mode" class="hidden">
+        <div class="dev-mode-content">
+            <input type="password" id="dev-mode-password" placeholder="Enter Dev Password" aria-label="Dev Mode Password">
+            <button id="dev-mode-submit">Submit</button>
+            <button id="close-dev-mode">Close</button>
+        </div>
+    </div>
+
+    <main>
+        <section id="home" class="container">
+            <h1>Welcome to the Customizable Chatbot Server</h1>
+            <p>Interact with the bot and personalize it!</p>
+            <a href="#chat" class="btn">Start Chatting</a>
+        </section>
+
+        <section id="chat" class="container">
+            <h2>Chat with the Bot</h2>
+            <div id="chatbot-messages" aria-live="polite"></div>
+            <form id="chatbot-form">
+                <input type="text" id="chatbot-input" placeholder="Type a message..." required>
+                <button type="submit">Send</button>
+            </form>
+        </section>
+
+        <aside id="settings-panel" class="hidden">
+            <h2>Bot Settings</h2>
+            <label for="greeting-message">Greeting Message:</label>
+            <input type="text" id="greeting-message" value="Hello, how can I assist you today?">
+
+            <label for="bot-color">Bot Message Color:</label>
+            <input type="color" id="bot-color" value="#555">
+
+            <label for="user-color">User Message Color:</label>
+            <input type="color" id="user-color" value="#3a3a3a">
+
+            <label for="bot-name">Bot Name:</label>
+            <input type="text" id="bot-name" value="Chatbot">
+
+            <label for="user-name">Your Name:</label>
+            <input type="text" id="user-name" value="You">
+
+            <label for="background-color">Background Color:</label>
+            <input type="color" id="background-color" value="#121212">
+
+            <fieldset>
+                <legend>Bot Behavior</legend>
+                <label><input type="radio" name="bot-behavior" value="chat" checked> Chat</label>
+                <label><input type="radio" name="bot-behavior" value="funny"> Funny</label>
+                <label><input type="radio" name="bot-behavior" value="serious"> Serious</label>
+                <label><input type="radio" name="bot-behavior" value="happy"> Happy</label>
+                <label><input type="radio" name="bot-behavior" value="sad"> Sad</label>
+                <label><input type="radio" name="bot-behavior" value="angry"> Angry</label>
+            </fieldset>
+            <button id="update-settings">Update Settings</button>
+        </aside>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = {
+                chatbotInput: document.getElementById('chatbot-input'),
+                chatbotMessages: document.getElementById('chatbot-messages'),
+                chatbotForm: document.getElementById('chatbot-form'),
+                devModeInput: document.getElementById('dev-mode-password'),
+                devModeButton: document.getElementById('dev-mode-button'),
+                devModeSubmitButton: document.getElementById('dev-mode-submit'),
+                devModeCloseButton: document.getElementById('close-dev-mode'),
+                devPanel: document.getElementById('dev-mode'),
+                settingsPanel: document.getElementById('settings-panel'),
+                updateSettingsButton: document.getElementById('update-settings'),
+            };
+
+            const state = {
+                botSettings: {
+                    greetingMessage: 'Hello, how can I assist you today?',
+                    botColor: '#555',
+                    userColor: '#3a3a3a',
+                    botName: 'Chatbot',
+                    userName: 'You',
+                    backgroundColor: '#121212',
+                    botBehavior: 'chat',
+                },
+            };
+
+            const toggleVisibility = (element, visible) => {
+                element.style.display = visible ? 'block' : 'none';
+            };
+
+            const applySettings = () => {
+                document.body.style.backgroundColor = state.botSettings.backgroundColor;
+            };
+
+            const appendMessage = (text, sender) => {
+                const message = document.createElement('div');
+                message.classList.add('message', sender === 'bot' ? 'bot-message' : 'user-message');
+                message.textContent = text;
+                message.style.color = sender === 'bot' ? state.botSettings.botColor : state.botSettings.userColor;
+                elements.chatbotMessages.appendChild(message);
+                elements.chatbotMessages.scrollTop = elements.chatbotMessages.scrollHeight;
+            };
+
+            elements.devModeButton.addEventListener('click', () => toggleVisibility(elements.devPanel, true));
+
+            elements.devModeSubmitButton.addEventListener('click', () => {
+                if (elements.devModeInput.value === 'MOOSHI') {
+                    toggleVisibility(elements.devPanel, false);
+                    toggleVisibility(elements.settingsPanel, true);
+                } else {
+                    alert('Incorrect password');
+                }
+            });
+
+            elements.devModeCloseButton.addEventListener('click', () => toggleVisibility(elements.devPanel, false));
+
+            elements.updateSettingsButton.addEventListener('click', () => {
+                state.botSettings.greetingMessage = document.getElementById('greeting-message').value;
+                state.botSettings.botColor = document.getElementById('bot-color').value;
+                state.botSettings.userColor = document.getElementById('user-color').value;
+                state.botSettings.botName = document.getElementById('bot-name').value;
+                state.botSettings.userName = document.getElementById('user-name').value;
+                state.botSettings.backgroundColor = document.getElementById('background-color').value;
+                state.botSettings.botBehavior = document.querySelector('input[name="bot-behavior"]:checked').value;
+                applySettings();
+            });
+
+            elements.chatbotForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const userMessage = elements.chatbotInput.value;
+                appendMessage(`${state.botSettings.userName}: ${userMessage}`, 'user');
+
+                elements.chatbotInput.value = '';
+
+                setTimeout(() => {
+                    let response = '';
+                    switch (state.botSettings.botBehavior) {
+                        case 'funny': response = "Haha, that's hilarious!"; break;
+                        case 'serious': response = "Let's stay focused."; break;
+                        case 'happy': response = "What a great day!"; break;
+                        case 'sad': response = "I'm feeling a bit down..."; break;
+                        case 'angry': response = "Don't make me angry!"; break;
+                        default: response = state.botSettings.greetingMessage;
+                    }
+                    appendMessage(`${state.botSettings.botName}: ${response}`, 'bot');
+                }, 1000);
+            });
+
+            applySettings();
+        });
+    </script>
+</body>
+</html>
